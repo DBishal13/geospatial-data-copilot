@@ -35,6 +35,17 @@ def main():
     print(f"Writing overview map to {overview_path} ...")
     overview_path.write_text(map_html, encoding="utf-8")
 
+    print("Querying dataset for worst-condition sample rows...")
+    worst_result = run_select(
+        "SELECT id, asset_type, lon, lat, condition_score FROM assets ORDER BY condition_score DESC LIMIT 10",
+        row_limit=10,
+    )
+    worst_map_html = build_map_html(worst_result["rows"], cluster=False)
+    if worst_map_html is not None:
+        worst_path = docs / "worst_condition_map.html"
+        print(f"Writing worst-condition sample map to {worst_path} ...")
+        worst_path.write_text(worst_map_html, encoding="utf-8")
+
     repo_url = "https://github.com/DBishal13/geospatial-data-copilot"
     index_html = INDEX_TEMPLATE.replace("__REPO_URL__", repo_url)
     (docs / "index.html").write_text(index_html, encoding="utf-8")
@@ -56,13 +67,6 @@ INDEX_TEMPLATE = """<!doctype html>
     line-height: 1.55;
     color: #1b1f24;
     background: #ffffff;
-  }
-  @media (prefers-color-scheme: dark) {
-    body { color: #e6e8eb; background: #14171a; }
-    .card, .qa { background: #1c2024; border-color: #2c3238; }
-    .tag { background: #2c3238; color: #cfd6dd; }
-    a { color: #7ab7ff; }
-    .btn { background: #3b82f6; }
   }
   a { color: #2563eb; }
   main { max-width: 880px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
@@ -86,10 +90,21 @@ INDEX_TEMPLATE = """<!doctype html>
   .qa .q::before { content: "Q: "; opacity: 0.5; }
   .qa .a::before { content: "→ "; opacity: 0.5; }
   .qa .a { opacity: 0.85; font-size: 0.95rem; }
+  .qa-map { margin-top: 0.75rem; }
+  .qa-map iframe { height: 320px; }
   ol, ul { padding-left: 1.3rem; }
   code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88rem; }
   pre { background: rgba(127,127,127,0.12); padding: 0.75rem 1rem; border-radius: 8px; overflow-x: auto; }
   footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid rgba(127,127,127,0.25); font-size: 0.85rem; opacity: 0.7; }
+
+  @media (prefers-color-scheme: dark) {
+    body { color: #e6e8eb; background: #14171a; }
+    a { color: #7ab7ff; }
+    .card, .qa { background: #1c2024; border-color: #2c3238; }
+    .tag { background: #2c3238; color: #cfd6dd; }
+    .btn { background: #3b82f6; }
+    pre { background: rgba(255,255,255,0.08); }
+  }
 </style>
 </head>
 <body>
@@ -147,7 +162,11 @@ INDEX_TEMPLATE = """<!doctype html>
     <div class="qa">
       <div class="q">Show me the 10 poles in the worst condition on a map.</div>
       <div class="a">Renders an interactive Folium map with color-coded markers and popups —
-      like the live demo map above, but scoped to a chat question.</div>
+      like the live demo map above, but scoped to a chat question. This is a real render of that
+      exact query against the seeded dataset:</div>
+      <figure class="card qa-map">
+        <iframe src="./worst_condition_map.html" title="Map of the 10 worst-condition assets" loading="lazy"></iframe>
+      </figure>
     </div>
     <div class="qa">
       <div class="q">Find inspection notes similar to reports mentioning corrosion.</div>
