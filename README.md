@@ -187,11 +187,17 @@ agent against a *local* model — this is not a curated success story:
 
 ## GitHub Pages demo
 
-A static demo of the project's overview map is built and published to GitHub
-Pages on pushes to `main` via a GitHub Actions workflow. The CI job generates
-`docs/index.html` and `docs/overview_map.html` and publishes them using
-`peaceiris/actions-gh-pages`. You can enable Pages to serve the `gh-pages`
-branch in the repository settings after the first deploy.
+A static landing page (project overview, example queries, and a live overview
+map of the seeded dataset) is built and published to GitHub Pages on pushes to
+`main` via a GitHub Actions workflow (`.github/workflows/deploy-pages.yml`).
+The CI job generates `docs/index.html` and `docs/overview_map.html` and
+publishes them via the native `actions/upload-pages-artifact` +
+`actions/deploy-pages` flow (repository Pages source: **GitHub Actions**).
+
+This static page is a demo/landing page only — GitHub Pages can't run the
+actual FastAPI + Streamlit + Ollama app, so the interactive chat isn't hosted
+there. See "Run it yourself" on the page (or the Setup section above) to try
+the real thing.
 
 Locally, you can reproduce the built site with:
 
