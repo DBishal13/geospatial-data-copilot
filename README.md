@@ -199,6 +199,14 @@ actual FastAPI + Streamlit + Ollama app, so the interactive chat isn't hosted
 there. See "Run it yourself" on the page (or the Setup section above) to try
 the real thing.
 
+## Release process
+
+Work happens on `dev`; changes land on `main` via pull request (which is what
+triggers the Pages deploy). Tagged releases use semantic versioning
+(`vMAJOR.MINOR.PATCH`), each with GitHub Release notes summarizing what
+changed. See [Releases](https://github.com/DBishal13/geospatial-data-copilot/releases)
+for the version history.
+
 Locally, you can reproduce the built site with:
 
 ```
