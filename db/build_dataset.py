@@ -17,7 +17,11 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 from agent import config  # noqa: E402
 
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+OVERPASS_URLS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.openstreetmap.fr/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+]
 
 # Downtown / Mission / SoMa San Francisco — small enough for a fast Overpass
 # query, dense enough (~1,500 power nodes) for a meaningful demo.
@@ -89,9 +93,39 @@ def fetch_osm_assets() -> list[dict]:
     out body;
     """
     headers = {"User-Agent": "geospatial-data-copilot/0.1 (portfolio demo project)"}
-    resp = requests.post(OVERPASS_URL, data={"data": query}, headers=headers, timeout=90)
-    resp.raise_for_status()
-    elements = resp.json()["elements"]
+
+    last_exc = None
+    for url in OVERPASS_URLS:
+        try:
+            resp = requests.post(url, data={"data": query}, headers=headers, timeout=90)
+            resp.raise_for_status()
+            elements = resp.json().get("elements", [])
+            if not elements:
+                continue
+
+            assets = []
+            for el in elements:
+                power_tag = el.get("tags", {}).get("power")
+                asset_type = ASSET_TYPE_MAP.get(power_tag)
+                if not asset_type:
+                    continue
+                # Some Overpass results may lack lat/lon (ways/relations); skip those
+                lat = el.get("lat")
+                lon = el.get("lon")
+                if lat is None or lon is None:
+                    continue
+                assets.append({"osm_id": el["id"], "lat": lat, "lon": lon, "asset_type": asset_type})
+
+            return assets
+        except requests.RequestException as exc:
+            last_exc = exc
+            # try next endpoint
+            continue
+
+    # If we get here, all endpoints failed
+    if last_exc:
+        raise last_exc
+    return []
 
     assets = []
     for el in elements:
