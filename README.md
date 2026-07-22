@@ -184,3 +184,19 @@ agent against a *local* model — this is not a curated success story:
 - [x] Semantic (vector-search) query works end to end
 - [x] README documents setup, architecture, dataset provenance, and example
       queries
+
+## GitHub Pages demo
+
+A static demo of the project's overview map is built and published to GitHub
+Pages on pushes to `main` via a GitHub Actions workflow. The CI job generates
+`docs/index.html` and `docs/overview_map.html` and publishes them using
+`peaceiris/actions-gh-pages`. You can enable Pages to serve the `gh-pages`
+branch in the repository settings after the first deploy.
+
+Locally, you can reproduce the built site with:
+
+```
+pip install -r requirements.txt
+python scripts/build_static_site.py
+# Open docs/index.html in your browser
+```
