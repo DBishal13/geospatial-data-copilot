@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pages: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -25,6 +29,11 @@ jobs:
       - name: Build static site (generate docs/)
         run: |
           python scripts/build_static_site.py
+
+      - name: Show docs contents (debug)
+        run: |
+          echo "Workspace files:" && ls -la
+          echo "Docs dir listing:" && ls -la docs || echo "docs/ not found"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
